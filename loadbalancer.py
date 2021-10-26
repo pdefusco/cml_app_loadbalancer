@@ -1,3 +1,6 @@
+!pip3 install https://$CDSW_DOMAIN/api/v2/python.tar.gz
+!pip3 install -r requirements.txt
+
 from flask import Flask, send_from_directory, request, redirect
 from pandas.io.json import dumps as jsonify
 from json import loads
@@ -18,15 +21,28 @@ minimum_unlocked_applications = 2
 maximum_unlocked_applications = 5
 project_runtime_identifier = "runtime_name"
 application_script = "application.py"
+url_array_database = 'application_list.db'
 
 # Load Application List
-import sqlite3
-DATABASE = 'application_list.db'
-database = sqlite3.connect(DATABASE)
-# TODO Make the below run on Sqllite
 
+database = sqlite3.connect(url_array_database)
+sqlite_cursor = database.cursor()
+
+# Create Table on first run
+#sqlite_cursor.execute('''CREATE TABLE app_urls (app_url text, state text)''')
+#sqlite_cursor.execute("INSERT INTO app_urls VALUES ('http://app_1.cloudera.site','available')")
+#database.commit()
+
+sqlite_cursor.execute('select * from app_urls')
+rows = sqlite_cursor.fetchall()
 url_array = {}
-url_array["http://app_1.cloudera.site"] = "available"
+for row in rows:
+    url_array[row[0]] = row[1]
+database.close()
+
+
+#url_array = {}
+#url_array["http://app_1.cloudera.site"] = "available"
 
 #Create CML API Instance
 cml_api_instance = cmlapi.default_client()
@@ -106,8 +122,22 @@ def check_applications():
     url_array[redirect_array[len(redirect_array)-1]] = "locked"
     #remove application
     cml_api_instance.delete_application(os.environ["CDSW_PROJECT_ID"],application_id)
+  
+  #Update sqllite table
+  database = sqlite3.connect(url_array_database)
+  sqlite_cursor = database.cursor()
+  sqlite_cursor.execute('DELETE FROM app_urls')
+  for app_url,state in url_array.items():
+    sqlite_cursor.execute('INSERT INTO app_urls VALUES ("{}","{}")'.format(app_url, state))
+  database.commit()
+  database.close()
+  
   # return list of available applications
   return {'redirect_array':redirect_array}
+
+
+  
+    
 
 
 
