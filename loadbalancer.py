@@ -1,5 +1,5 @@
-!pip3 install https://$CDSW_DOMAIN/api/v2/python.tar.gz
-!pip3 install -r requirements.txt
+#!pip3 install https://$CDSW_DOMAIN/api/v2/python.tar.gz
+#!pip3 install -r requirements.txt
 
 from flask import Flask, send_from_directory, request, redirect
 from pandas.io.json import dumps as jsonify
