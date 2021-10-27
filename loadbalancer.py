@@ -38,7 +38,10 @@ def home():
   for url in redirect_array:
     if url_array[url] == "locked":
         redirect_array.remove(url)
-  return "sending to {}".format(redirect_array[random.randint(0,len(redirect_array)-1)]) #redirect
+  if len(redirect_array) == 0:
+    return "There are no running applications"
+  else:
+    return redirect(redirect_array[random.randint(0,len(redirect_array)-1)])
 
 # Start App
 if __name__ == "__main__":
